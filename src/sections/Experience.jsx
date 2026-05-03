@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import * as THREE from 'three'
+import React, { useState } from 'react'
+import { useInView } from 'react-intersection-observer'
 
 const experiences = [
   {
@@ -9,13 +8,14 @@ const experiences = [
     period: 'Oct 2024 – Present',
     location: 'Bengaluru, India',
     node: '3nm / 2nm',
-    color: '#0078d4',
+    color: '#4a9eff',
+    current: true,
     highlights: [
-      'Leading 4-member regression team for zero-defect Genesys releases across India, US & APAC',
-      'Reduced regression cycle time by 2 weeks by building standalone validation environments',
-      'Scaled regression infra 6× — from 4 to 25 testcases with Azure DevOps CI/CD',
-      'Enabled Hybrid FC + Innovus PNR flow integration delivering ~15% PPA improvement',
-      'Enhanced Physical Verification flows using Calibre (v2lvs + netlist generation)',
+      'Leading 4-member regression team delivering zero-defect Genesys releases across India, US & APAC',
+      'Reduced regression cycle time by 2 weeks by decoupling infra dependencies and building standalone validation environments',
+      'Scaled regression infra 6× — from 4 to 25 testcases with Azure DevOps CI/CD pipelines',
+      'Enabled Hybrid FC + Innovus PNR flow integration delivering ~15% improvement across all PPA metrics',
+      'Enhanced Physical Verification flows using Calibre — added multiple features in v2lvs and netlist generation',
     ],
   },
   {
@@ -26,8 +26,8 @@ const experiences = [
     node: '7nm',
     color: '#c9a84c',
     highlights: [
-      'Owned full RTL-to-GDSII for high-frequency Vision processor cores (3M+ instances, multiple clocks)',
-      'Built Cerebrus ML-based PPA optimization — 14% freq gain, 10% leakage, 7% active power savings',
+      'Owned full RTL-to-GDSII implementation for high-frequency Vision processor cores (3M+ instances, multiple clocks)',
+      'Built Cerebrus ML-based PPA optimization — 14% frequency gain, 10% leakage reduction, 7% active power savings',
       'Developed FuSA constrained routing methodology for ISO 26262 multicore designs',
       'Built scenario-replay flow reducing Cerebrus runtime by 10× for similar configurations',
       'Developed automated floorplan resizing utility maximising utilisation without manual tuning',
@@ -38,8 +38,8 @@ const experiences = [
     role: 'Physical Design Engineer II',
     period: 'Aug 2020 – Mar 2024',
     location: 'Pune, India',
-    node: '7nm–28nm',
-    color: '#1a56db',
+    node: '7nm – 28nm',
+    color: '#7c3aed',
     highlights: [
       'Implemented Mixed-Placer flow replacing manual placement — ±3% PPA gain, 60% faster PnR turnaround',
       'Delivered complete backend closure (CTS, PnR, STA, ECO, IR-Drop) for multiple Tensilica IPs',
@@ -53,140 +53,119 @@ const experiences = [
     period: 'Jul 2019 – Jul 2020',
     location: 'Pune, India',
     node: '16nm / 28nm',
-    color: '#6b7280',
+    color: '#4a9eff',
     highlights: [
       'Built Physical Verification flows using PVS/Pegasus for 28nm and 16nm (DRC/LVS)',
-      'Built LSF-based distributed execution within EDA tools — increased farm throughput 6×',
+      'Built LSF-based distributed execution within EDA tools — increased farm throughput and slot availability',
     ],
   },
 ]
 
-function TimelinePath({ activeIdx }) {
-  const lineRef = useRef()
-  const dotsRef = useRef([])
-
-  useFrame(() => {
-    if (lineRef.current) {
-      lineRef.current.rotation.y += 0.003
-    }
-  })
-
-  const points = experiences.map((_, i) => new THREE.Vector3(
-    Math.sin(i * 1.2) * 1.2,
-    1.5 - i * 1.0,
-    Math.cos(i * 1.2) * 0.8
-  ))
-
-  const curve = new THREE.CatmullRomCurve3(points)
-  const tubeGeo = new THREE.TubeGeometry(curve, 60, 0.03, 8, false)
+function ExperienceCard({ exp, index }) {
+  const [expanded, setExpanded] = useState(index === 0)
+  const { ref, inView } = useInView({ threshold: 0.15, triggerOnce: true })
 
   return (
-    <group ref={lineRef}>
-      <mesh geometry={tubeGeo}>
-        <meshStandardMaterial color="#e2e0db" metalness={0.3} roughness={0.7} />
-      </mesh>
-      {points.map((pt, i) => (
-        <mesh key={i} position={pt}>
-          <sphereGeometry args={[i === activeIdx ? 0.14 : 0.09, 16, 16]} />
-          <meshStandardMaterial
-            color={experiences[i].color}
-            metalness={0.6}
-            roughness={0.3}
-            emissive={i === activeIdx ? experiences[i].color : '#000'}
-            emissiveIntensity={i === activeIdx ? 0.4 : 0}
-          />
-        </mesh>
-      ))}
-    </group>
+    <div ref={ref} style={{
+      display: 'grid',
+      gridTemplateColumns: '120px 1fr',
+      gap: '0 32px',
+      opacity: inView ? 1 : 0,
+      transform: inView ? 'none' : 'translateY(28px)',
+      transition: `opacity 0.55s ease ${index * 0.12}s, transform 0.55s ease ${index * 0.12}s`,
+    }}>
+      {/* Left: timeline */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 6 }}>
+        {/* Node dot */}
+        <div style={{
+          width: 14, height: 14, borderRadius: '50%',
+          background: exp.current ? exp.color : 'var(--dark-surface-2)',
+          border: `2px solid ${exp.color}`,
+          boxShadow: exp.current ? `0 0 12px ${exp.color}60` : 'none',
+          flexShrink: 0, zIndex: 1,
+          transition: 'box-shadow 0.3s',
+        }} />
+        {/* Line down */}
+        {index < experiences.length - 1 && (
+          <div style={{
+            width: 1, flex: 1, minHeight: 40, marginTop: 8,
+            background: `linear-gradient(to bottom, ${exp.color}40, transparent)`,
+          }} />
+        )}
+      </div>
+
+      {/* Right: card */}
+      <div style={{ paddingBottom: 36 }}>
+        <div style={{
+          background: 'var(--dark-surface)',
+          border: `0.5px solid ${expanded ? exp.color + '40' : 'var(--dark-border)'}`,
+          borderLeft: `2px solid ${exp.color}`,
+          borderRadius: 10,
+          padding: '20px 24px',
+          cursor: 'pointer',
+          transition: 'border-color 0.25s, box-shadow 0.25s',
+          boxShadow: expanded ? `0 4px 32px ${exp.color}14` : 'none',
+        }}
+        onClick={() => setExpanded(e => !e)}
+        onMouseEnter={e => { if (!expanded) e.currentTarget.style.borderColor = `${exp.color}30` }}
+        onMouseLeave={e => { if (!expanded) e.currentTarget.style.borderColor = 'var(--dark-border)' }}
+        >
+          {/* Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+            <div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 600, color: 'var(--dark-text)', marginBottom: 3 }}>
+                {exp.company}
+                {exp.current && (
+                  <span style={{ marginLeft: 10, fontFamily: 'var(--font-mono)', fontSize: 9, padding: '2px 8px', borderRadius: 20, background: '#22c55e20', color: '#22c55e', border: '0.5px solid #22c55e40', letterSpacing: '0.06em' }}>current</span>
+                )}
+              </div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--dark-text-secondary)', marginBottom: 8 }}>{exp.role}</div>
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--dark-text-muted)', letterSpacing: '0.04em' }}>{exp.period}</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: exp.color, letterSpacing: '0.04em', opacity: 0.8 }}>{exp.node}</span>
+              </div>
+            </div>
+            <div style={{
+              color: 'var(--dark-text-muted)', fontSize: 16, flexShrink: 0,
+              transition: 'transform 0.3s',
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+            }}>▾</div>
+          </div>
+
+          {/* Expanded highlights */}
+          {expanded && (
+            <ul style={{ marginTop: 18, paddingLeft: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 9, borderTop: `0.5px solid ${exp.color}20`, paddingTop: 16 }}>
+              {exp.highlights.map((h, j) => (
+                <li key={j} style={{ display: 'flex', gap: 10, fontSize: 13, color: 'var(--dark-text-secondary)', lineHeight: 1.6 }}>
+                  <span style={{ color: exp.color, flexShrink: 0, marginTop: 1, fontFamily: 'var(--font-mono)', fontSize: 11 }}>▸</span>
+                  {h}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }
 
 export default function Experience() {
-  const [activeIdx, setActiveIdx] = useState(0)
-  const sectionRef = useRef()
-
-  useEffect(() => {
-    const onScroll = () => {
-      if (!sectionRef.current) return
-      const rect = sectionRef.current.getBoundingClientRect()
-      const progress = Math.max(0, Math.min(1, (-rect.top) / (rect.height - window.innerHeight)))
-      const idx = Math.min(experiences.length - 1, Math.floor(progress * experiences.length * 1.2))
-      setActiveIdx(idx)
-    }
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  const exp = experiences[activeIdx]
+  const { ref, inView } = useInView({ threshold: 0.05, triggerOnce: true })
 
   return (
-    <section id="experience" ref={sectionRef} style={{ background: 'var(--off-white)', borderTop: '0.5px solid var(--border)', padding: '100px 0' }}>
+    <section id="experience" ref={ref} style={{ padding: '100px 0', background: 'var(--dark-bg)', borderTop: '0.5px solid var(--dark-border)' }}>
       <div className="container">
-        <p className="section-label">Experience</p>
-        <h2 style={{ fontSize: 'clamp(26px, 3vw, 40px)', fontWeight: 700, letterSpacing: '-0.025em', marginBottom: 56 }}>
+        <p className="section-label-dark">Experience</p>
+        <h2 style={{ fontSize: 'clamp(26px, 3vw, 42px)', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 56, color: 'var(--dark-text)', lineHeight: 1.1 }}>
           Career timeline
         </h2>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 48, alignItems: 'start' }}>
-          {/* 3D timeline */}
-          <div style={{ position: 'sticky', top: 100, height: 400, borderRadius: 16, overflow: 'hidden', background: 'var(--white)', border: '0.5px solid var(--border)' }}>
-            <Canvas camera={{ position: [0, 0, 5], fov: 50 }} gl={{ antialias: true, alpha: true }}>
-              <ambientLight intensity={0.6} />
-              <directionalLight position={[3, 5, 3]} intensity={1} />
-              <TimelinePath activeIdx={activeIdx} />
-            </Canvas>
-            <div style={{ position: 'absolute', bottom: 16, left: 0, right: 0, textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              Career path · scroll to explore
-            </div>
-          </div>
-
-          {/* Experience cards */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            {experiences.map((e, i) => (
-              <div key={i} onClick={() => setActiveIdx(i)} style={{
-                background: 'var(--white)',
-                border: `1px solid ${activeIdx === i ? e.color : 'var(--border)'}`,
-                borderLeft: `4px solid ${e.color}`,
-                borderRadius: 12, padding: '24px 28px',
-                cursor: 'pointer',
-                transition: 'all 0.25s ease',
-                boxShadow: activeIdx === i ? `0 4px 24px ${e.color}22` : 'none',
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6, flexWrap: 'wrap', gap: 8 }}>
-                  <div>
-                    <div style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>{e.company}</div>
-                    <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 2 }}>{e.role}</div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{e.period}</div>
-                    <div style={{ fontSize: 11, marginTop: 3 }}>
-                      <span style={{ background: 'var(--surface)', border: '0.5px solid var(--border)', borderRadius: 4, padding: '2px 7px', color: 'var(--text-secondary)', fontWeight: 500 }}>{e.node}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {activeIdx === i && (
-                  <ul style={{ marginTop: 16, paddingLeft: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {e.highlights.map((h, j) => (
-                      <li key={j} style={{ display: 'flex', gap: 10, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-                        <span style={{ color: e.color, flexShrink: 0, marginTop: 2 }}>▸</span>
-                        {h}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
-          </div>
+        <div style={{ maxWidth: 760 }}>
+          {experiences.map((exp, i) => (
+            <ExperienceCard key={i} exp={exp} index={i} />
+          ))}
         </div>
       </div>
-
-      <style>{`
-        @media (max-width: 900px) {
-          section#experience .container > div:last-child { grid-template-columns: 1fr !important; }
-          section#experience .container > div:last-child > div:first-child { display: none !important; }
-        }
-      `}</style>
     </section>
   )
 }

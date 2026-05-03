@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import ChipCanvas from '../components/ChipCanvas'
 
 const nodes = ['28nm', '16nm', '7nm', '5nm', '3nm', '2nm']
@@ -6,134 +6,132 @@ const nodes = ['28nm', '16nm', '7nm', '5nm', '3nm', '2nm']
 function NodeCycler() {
   const [idx, setIdx] = useState(0)
   const [visible, setVisible] = useState(true)
-
   useEffect(() => {
-    const interval = setInterval(() => {
+    const t = setInterval(() => {
       setVisible(false)
-      setTimeout(() => {
-        setIdx(i => (i + 1) % nodes.length)
-        setVisible(true)
-      }, 300)
+      setTimeout(() => { setIdx(i => (i + 1) % nodes.length); setVisible(true) }, 280)
     }, 1800)
-    return () => clearInterval(interval)
+    return () => clearInterval(t)
   }, [])
-
   return (
     <span style={{
-      display: 'inline-block',
-      color: 'var(--accent)',
-      fontWeight: 700,
-      minWidth: 80,
-      transition: 'opacity 0.3s, transform 0.3s',
-      opacity: visible ? 1 : 0,
-      transform: visible ? 'translateY(0)' : 'translateY(-8px)',
+      display: 'inline-block', color: 'var(--accent)', fontFamily: 'var(--font-mono)',
+      fontWeight: 500, minWidth: 72, letterSpacing: '0.04em',
+      transition: 'opacity 0.28s, transform 0.28s',
+      opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(-6px)',
     }}>{nodes[idx]}</span>
   )
 }
 
 export default function Hero() {
-  const heroRef = useRef()
-
   return (
-    <section id="hero" ref={heroRef} style={{
+    <section id="hero" style={{
       minHeight: '100vh',
       display: 'grid',
       gridTemplateColumns: '1fr 1fr',
       alignItems: 'center',
       paddingTop: 'var(--nav-h)',
-      background: 'var(--white)',
+      background: 'var(--dark-bg)',
       position: 'relative',
       overflow: 'hidden',
     }}>
-      {/* Background grid */}
+      {/* Subtle dot grid background */}
       <div style={{
-        position: 'absolute', inset: 0,
-        backgroundImage: 'linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)',
-        backgroundSize: '60px 60px',
-        opacity: 0.35,
-        pointerEvents: 'none',
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        backgroundImage: 'radial-gradient(circle, rgba(74,158,255,0.12) 1px, transparent 1px)',
+        backgroundSize: '40px 40px',
+      }} />
+      {/* Gradient fade bottom */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: 180,
+        background: 'linear-gradient(to bottom, transparent, var(--dark-bg))',
+        pointerEvents: 'none', zIndex: 2,
       }} />
 
       {/* Left: text */}
-      <div className="container" style={{ paddingRight: 0, paddingTop: 40, paddingBottom: 40 }}>
-        <div style={{ maxWidth: 560 }}>
+      <div className="container" style={{ paddingRight: 0, paddingTop: 60, paddingBottom: 60, position: 'relative', zIndex: 3 }}>
+        <div style={{ maxWidth: 540 }}>
+          {/* Status pill */}
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: 'var(--accent-light)', border: '0.5px solid #b3cfff',
-            borderRadius: 20, padding: '5px 14px', marginBottom: 28,
+            background: 'rgba(74,158,255,0.08)',
+            border: '0.5px solid var(--dark-border-bright)',
+            borderRadius: 20, padding: '5px 14px', marginBottom: 32,
           }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
-            <span style={{ fontSize: 12, color: 'var(--accent-dark)', fontWeight: 500 }}>Open to Senior / Staff roles</span>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: '0 0 6px #22c55e' }} />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--dark-text-secondary)', letterSpacing: '0.06em' }}>open to senior / staff roles</span>
           </div>
 
           <h1 style={{
             fontFamily: 'var(--font-display)',
-            fontSize: 'clamp(38px, 5vw, 62px)',
-            fontWeight: 800,
-            letterSpacing: '-0.03em',
-            lineHeight: 1.05,
-            color: 'var(--text-primary)',
-            marginBottom: 20,
+            fontSize: 'clamp(42px, 5.5vw, 70px)',
+            fontWeight: 700,
+            letterSpacing: '-0.035em',
+            lineHeight: 1.0,
+            color: 'var(--dark-text)',
+            marginBottom: 28,
           }}>
-            Faisal<br />Ahmed<br />Belwadi
+            Faisal<br />
+            <span style={{ color: 'var(--accent)', opacity: 0.9 }}>Ahmed</span><br />
+            Belwadi
           </h1>
 
-          <p style={{ fontSize: 17, color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: 14, maxWidth: 460 }}>
-            Senior Physical Design & PD CAD Engineer — RTL to GDSII across <NodeCycler /> technology nodes.
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--dark-text-secondary)', lineHeight: 1.7, marginBottom: 10, maxWidth: 420, letterSpacing: '0.02em' }}>
+            Senior PD & PD CAD Engineer · RTL to GDSII across <NodeCycler />
           </p>
-          <p style={{ fontSize: 15, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 32, maxWidth: 440 }}>
+          <p style={{ fontSize: 14, color: 'var(--dark-text-muted)', lineHeight: 1.7, marginBottom: 36, maxWidth: 430 }}>
             5.5+ years building end-to-end backend flows, ML-driven PPA optimization, and AI-powered EDA workflows at Microsoft and Cadence.
           </p>
 
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <a href="#projects" style={{
-              background: 'var(--text-primary)', color: 'var(--white)',
-              padding: '13px 28px', borderRadius: 8,
-              fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 500,
+              background: 'var(--accent)', color: '#fff',
+              padding: '12px 26px', borderRadius: 6,
+              fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 500, letterSpacing: '0.06em',
               transition: 'opacity 0.2s',
             }}
             onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
             onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-            >View Projects</a>
+            >view_projects →</a>
 
             <a href="https://linkedin.com/in/faisal-belwadi-physicaldesign-cad" target="_blank" style={{
-              background: 'transparent', color: 'var(--text-primary)',
-              padding: '13px 28px', borderRadius: 8,
-              border: '1px solid var(--border-dark)',
-              fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 500,
+              background: 'transparent', color: 'var(--dark-text)',
+              padding: '12px 26px', borderRadius: 6,
+              border: '0.5px solid var(--dark-border)',
+              fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '0.06em',
               transition: 'border-color 0.2s',
             }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--text-primary)'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-dark)'}
-            >LinkedIn ↗</a>
+            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--dark-border)'}
+            >linkedin ↗</a>
           </div>
 
-          {/* Stats row */}
-          <div style={{ display: 'flex', gap: 32, marginTop: 48, paddingTop: 32, borderTop: '0.5px solid var(--border)' }}>
-            {[['5.5+', 'Years experience'], ['2nm–28nm', 'Tech nodes'], ['3+', 'Tapeouts owned']].map(([val, label]) => (
+          {/* Stats */}
+          <div style={{ display: 'flex', gap: 40, marginTop: 52, paddingTop: 32, borderTop: '0.5px solid var(--dark-border)' }}>
+            {[['5.5+', 'yrs experience'], ['2nm→28nm', 'nodes'], ['3+', 'tapeouts']].map(([val, label]) => (
               <div key={label}>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: 'var(--text-primary)' }}>{val}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--dark-text)', letterSpacing: '-0.02em' }}>{val}</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--dark-text-muted)', marginTop: 3, letterSpacing: '0.08em' }}>{label}</div>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Right: 3D Chip */}
-      <div style={{ height: '100vh', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <ChipCanvas style={{ width: '100%', height: '80vh' }} />
+      {/* Right: 3D chip */}
+      <div style={{ height: '100vh', position: 'relative', zIndex: 3 }}>
+        <ChipCanvas style={{ width: '100%', height: '100%' }} />
         <div style={{
-          position: 'absolute', bottom: 80, left: '50%', transform: 'translateX(-50%)',
-          fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.08em',
-          textTransform: 'uppercase', whiteSpace: 'nowrap',
-        }}>Procedural IC die · Three.js</div>
+          position: 'absolute', bottom: 60, left: '50%', transform: 'translateX(-50%)',
+          fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--dark-text-muted)',
+          letterSpacing: '0.1em', textTransform: 'uppercase', whiteSpace: 'nowrap',
+        }}>isometric ic die · three.js procedural</div>
       </div>
 
       <style>{`
         @media (max-width: 900px) {
           section#hero { grid-template-columns: 1fr !important; }
-          section#hero > div:last-child { height: 50vh !important; }
+          section#hero > div:last-child { height: 55vh !important; }
         }
       `}</style>
     </section>
